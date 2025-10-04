@@ -1,4 +1,4 @@
-name: Laravel Deploy to Production
+name: Laravel Deploy - ULTRA FAST (No Vendor, No Delete)
 
 on:
   push:
@@ -15,53 +15,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar PHP
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, mysql, zip, gd, curl, sqlite3, pdo_sqlite
-          coverage: none
-
-      # 3. Configurar Node.js
+      # 2. Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      # 4. Instalar dependências PHP (apenas para build)
-      - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction
-
-      # 5. Instalar dependências Node.js
+      # 3. Instalar dependências Node.js
       - name: Install Node dependencies
         run: npm ci
 
-      # 6. Build assets
+      # 4. Build assets
       - name: Build assets
         run: npm run build
 
-      # 7. Configurar aplicação Laravel
-      - name: Setup Laravel
-        run: |
-          cp .env.example .env
-          php artisan key:generate --no-interaction
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-
-      # 8. Executar migrações (opcional - descomente se necessário)
-      - name: Run migrations
-        run: php artisan migrate --force
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-
-      # 9. Criar arquivo de configuração de produção
+      # 5. Criar arquivo de configuração de produção
       - name: Create production config
         run: |
           echo "APP_NAME=\"Genios_Infotech\"" > .env.production
@@ -86,53 +55,31 @@ jobs:
           echo "MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}" >> .env.production
           echo "MAIL_FROM_NAME=\"Genios Infotech\"" >> .env.production
 
-      # 10. Preparar arquivos para deploy (SEM VENDOR)
-      - name: Prepare deployment files
-        run: |
-          # Criar diretório de deploy
-          mkdir -p deploy
-          
-          # Copiar apenas arquivos essenciais (SEM VENDOR)
-          cp -r app deploy/
-          cp -r bootstrap deploy/
-          cp -r config deploy/
-          cp -r database deploy/
-          cp -r public deploy/
-          cp -r resources deploy/
-          cp -r routes deploy/
-          cp -r storage deploy/
-          cp -r .env.production deploy/.env
-          
-          # Copiar arquivos de configuração essenciais
-          cp artisan deploy/
-          cp composer.json deploy/
-          cp composer.lock deploy/
-          
-          # Criar diretórios necessários
-          mkdir -p deploy/storage/logs
-          mkdir -p deploy/storage/framework/cache
-          mkdir -p deploy/storage/framework/sessions
-          mkdir -p deploy/storage/framework/views
-          mkdir -p deploy/storage/app/public
-          
-          # Definir permissões
-          chmod -R 755 deploy/storage
-          chmod -R 755 deploy/bootstrap/cache
-          
-          echo "✅ Arquivos preparados para deploy (sem vendor)"
-
-      # 11. Deploy via FTP (SEM VENDOR - APPEND ONLY)
-      - name: Deploy to server
+      # 6. Deploy APENAS arquivos essenciais
+      - name: Deploy essential files only
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./deploy/
+          local-dir: ./
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           log-level: minimal
           dry-run: false
           dangerous-clean-slate: false
+          include: |
+            app/**
+            bootstrap/**
+            config/**
+            database/**
+            public/**
+            resources/**
+            routes/**
+            storage/**
+            artisan
+            composer.json
+            composer.lock
+            .env.production
           exclude: |
             **/.git*
             **/.github*
@@ -145,44 +92,16 @@ jobs:
             **/storage/framework/cache/*
             **/storage/framework/sessions/*
             **/storage/framework/views/*
+            **/vendor/**
 
-      # 12. Instruções para instalar vendor manualmente
-      - name: Manual vendor installation instructions
+      # 7. Instruções finais
+      - name: Final instructions
         run: |
-          echo "📋 INSTRUÇÕES PARA INSTALAR VENDOR NO SERVIDOR:"
+          echo "✅ Deploy concluído!"
+          echo "📋 Próximos passos:"
+          echo "1. Renomeie .env.production para .env no servidor"
+          echo "2. Instale vendor: composer install --no-dev"
+          echo "3. Execute: php artisan migrate --force"
+          echo "4. Configure permissões: chmod -R 755 storage"
           echo ""
-          echo "1. Acesse o painel de controle do seu provedor"
-          echo "2. Vá para 'Terminal' ou 'SSH' (se disponível)"
-          echo "3. Execute os comandos:"
-          echo "   cd /caminho/do/seu/site"
-          echo "   composer install --no-dev --optimize-autoloader"
-          echo "   php artisan config:cache"
-          echo "   php artisan route:cache"
-          echo "   php artisan view:cache"
-          echo "   php artisan migrate --force"
-          echo ""
-          echo "4. Se não tiver SSH, use o File Manager:"
-          echo "   - Faça upload do arquivo composer.phar"
-          echo "   - Execute via painel web"
-          echo ""
-          echo "✅ Deploy concluído! Tempo estimado: 5-10 minutos"
-
-      # 12. Configurar permissões no servidor (opcional)
-      # - name: Setup server permissions
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USERNAME }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     script: |
-      #       cd ${{ secrets.SSH_WORK_DIR }}
-      #       chmod -R 755 storage
-      #       chmod -R 755 bootstrap/cache
-      #       php artisan config:cache
-      #       php artisan route:cache
-      #       php artisan view:cache
-      #       php artisan migrate --force
-
-      # 13. Notificação de sucesso
-      - name: Deployment success
-        run: echo "✅ Deploy realizado com sucesso!"
+          echo "🚀 Tempo total: 2-3 minutos!"
