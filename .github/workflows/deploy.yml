@@ -92,7 +92,7 @@ jobs:
           # Criar diretório de deploy
           mkdir -p deploy
           
-          # Copiar arquivos necessários
+          # Copiar apenas arquivos essenciais
           cp -r app deploy/
           cp -r bootstrap deploy/
           cp -r config deploy/
@@ -104,16 +104,10 @@ jobs:
           cp -r vendor deploy/
           cp -r .env.production deploy/.env
           
-          # Copiar arquivos de configuração
+          # Copiar arquivos de configuração essenciais
           cp artisan deploy/
           cp composer.json deploy/
           cp composer.lock deploy/
-          cp package.json deploy/
-          cp package-lock.json deploy/
-          cp tailwind.config.js deploy/
-          cp vite.config.js deploy/
-          cp tsconfig.json deploy/
-          cp jsconfig.json deploy/
           
           # Criar diretórios necessários
           mkdir -p deploy/storage/logs
@@ -125,6 +119,19 @@ jobs:
           # Definir permissões
           chmod -R 755 deploy/storage
           chmod -R 755 deploy/bootstrap/cache
+          
+          # Limpar arquivos desnecessários do vendor
+          find deploy/vendor -name "*.md" -delete
+          find deploy/vendor -name "*.txt" -delete
+          find deploy/vendor -name "LICENSE*" -delete
+          find deploy/vendor -name "CHANGELOG*" -delete
+          find deploy/vendor -name "*.xml" -delete
+          find deploy/vendor -name "*.yml" -delete
+          find deploy/vendor -name "*.yaml" -delete
+          find deploy/vendor -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
+          find deploy/vendor -name "test" -type d -exec rm -rf {} + 2>/dev/null || true
+          find deploy/vendor -name "docs" -type d -exec rm -rf {} + 2>/dev/null || true
+          find deploy/vendor -name "doc" -type d -exec rm -rf {} + 2>/dev/null || true
 
       # 11. Deploy via FTP
       - name: Deploy to server
@@ -135,6 +142,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deploy/
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          log-level: minimal
+          dry-run: false
           exclude: |
             **/.git*
             **/.github*
@@ -147,6 +156,19 @@ jobs:
             **/storage/framework/cache/*
             **/storage/framework/sessions/*
             **/storage/framework/views/*
+            **/vendor/**/*.md
+            **/vendor/**/*.txt
+            **/vendor/**/LICENSE*
+            **/vendor/**/CHANGELOG*
+            **/vendor/**/*.xml
+            **/vendor/**/*.yml
+            **/vendor/**/*.yaml
+            **/vendor/**/tests/**
+            **/vendor/**/test/**
+            **/vendor/**/docs/**
+            **/vendor/**/doc/**
+            **/vendor/**/.git/**
+            **/vendor/**/.github/**
 
       # 12. Configurar permissões no servidor (opcional)
       # - name: Setup server permissions
