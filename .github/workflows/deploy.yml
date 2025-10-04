@@ -30,7 +30,7 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      # 4. Instalar dependências PHP
+      # 4. Instalar dependências PHP (apenas para build)
       - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
@@ -86,13 +86,13 @@ jobs:
           echo "MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}" >> .env.production
           echo "MAIL_FROM_NAME=\"Genios Infotech\"" >> .env.production
 
-      # 10. Preparar arquivos para deploy
+      # 10. Preparar arquivos para deploy (SEM VENDOR)
       - name: Prepare deployment files
         run: |
           # Criar diretório de deploy
           mkdir -p deploy
           
-          # Copiar apenas arquivos essenciais
+          # Copiar apenas arquivos essenciais (SEM VENDOR)
           cp -r app deploy/
           cp -r bootstrap deploy/
           cp -r config deploy/
@@ -101,7 +101,6 @@ jobs:
           cp -r resources deploy/
           cp -r routes deploy/
           cp -r storage deploy/
-          cp -r vendor deploy/
           cp -r .env.production deploy/.env
           
           # Copiar arquivos de configuração essenciais
@@ -120,20 +119,9 @@ jobs:
           chmod -R 755 deploy/storage
           chmod -R 755 deploy/bootstrap/cache
           
-          # Limpar arquivos desnecessários do vendor
-          find deploy/vendor -name "*.md" -delete
-          find deploy/vendor -name "*.txt" -delete
-          find deploy/vendor -name "LICENSE*" -delete
-          find deploy/vendor -name "CHANGELOG*" -delete
-          find deploy/vendor -name "*.xml" -delete
-          find deploy/vendor -name "*.yml" -delete
-          find deploy/vendor -name "*.yaml" -delete
-          find deploy/vendor -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
-          find deploy/vendor -name "test" -type d -exec rm -rf {} + 2>/dev/null || true
-          find deploy/vendor -name "docs" -type d -exec rm -rf {} + 2>/dev/null || true
-          find deploy/vendor -name "doc" -type d -exec rm -rf {} + 2>/dev/null || true
+          echo "✅ Arquivos preparados para deploy (sem vendor)"
 
-      # 11. Deploy via FTP
+      # 11. Deploy via FTP (SEM VENDOR)
       - name: Deploy to server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -156,19 +144,25 @@ jobs:
             **/storage/framework/cache/*
             **/storage/framework/sessions/*
             **/storage/framework/views/*
-            **/vendor/**/*.md
-            **/vendor/**/*.txt
-            **/vendor/**/LICENSE*
-            **/vendor/**/CHANGELOG*
-            **/vendor/**/*.xml
-            **/vendor/**/*.yml
-            **/vendor/**/*.yaml
-            **/vendor/**/tests/**
-            **/vendor/**/test/**
-            **/vendor/**/docs/**
-            **/vendor/**/doc/**
-            **/vendor/**/.git/**
-            **/vendor/**/.github/**
+
+      # 12. Instalar vendor no servidor (MUITO MAIS RÁPIDO)
+      - name: Install vendor on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.SSH_WORK_DIR }}
+            echo "🚀 Instalando dependências PHP..."
+            composer install --no-dev --optimize-autoloader --no-interaction
+            echo "✅ Dependências instaladas!"
+            echo "🔧 Configurando Laravel..."
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan migrate --force
+            echo "✅ Laravel configurado!"
 
       # 12. Configurar permissões no servidor (opcional)
       # - name: Setup server permissions
