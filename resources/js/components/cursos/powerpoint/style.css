@@ -1,0 +1,88 @@
+section {
+  padding: 3rem 0;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.6s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-pattern {
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      var(--opacity-3) 1px,
+      transparent 0
+    ),
+    radial-gradient(circle at 75% 75%, var(--opacity-3) 1px, transparent 0);
+  background-size: 40px 40px;
+}
+
+.faq-icon {
+  transition: transform 0.3s ease;
+}
+
+.faq-icon.rotate-90 {
+  transform: rotate(-90deg);
+}
+
+#examples #img {
+  height: auto;
+  width: 280px;
+  min-width: 200px;
+}
+
+/* .slider-row {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  } */
+
+.slider-track {
+  display: inline-flex;
+  animation: scroll-left 27s linear infinite;
+}
+
+.slider-reverse {
+  display: inline-flex;
+  animation: scroll-right 27s linear infinite;
+}
+
+/* .slider-track img, .slider-reverse img {
+    width: 150px;
+    height: auto;
+    margin: 0 10px;
+  } */
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 640px) {
+  #examples #img {
+    height: auto;
+    width: 200px;
+    min-width: 200px;
+  }
+}
