@@ -121,7 +121,7 @@ jobs:
           
           echo "✅ Arquivos preparados para deploy (sem vendor)"
 
-      # 11. Deploy via FTP (SEM VENDOR)
+      # 11. Deploy via FTP (SEM VENDOR - APPEND ONLY)
       - name: Deploy to server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -132,6 +132,7 @@ jobs:
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           log-level: minimal
           dry-run: false
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.github*
