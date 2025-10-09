@@ -20,7 +20,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'  # Ajuste para a versão do seu servidor (ex.: 7.4, 8.0)
+          php-version: '8.2'  # Ajuste para a versão do seu servidor (ex.: 7.4, 8.0)
           extensions: mbstring, xml, zip, gd, mysql, opcache
           coverage: none
 
