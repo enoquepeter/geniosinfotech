@@ -20,11 +20,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'  # Ajuste para a versão do seu servidor (ex.: 7.4, 8.0)
+          php-version: '8.2'
           extensions: mbstring, xml, zip, gd, mysql, opcache
           coverage: none
 
-      # 3. Instalar dependências PHP (gera a pasta vendor)
+      # 3. Instalar dependências PHP
       - name: Install PHP Dependencies
         run: |
           composer install --optimize-autoloader --no-dev --no-interaction --no-progress
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'  # Ajuste para sua versão (ex.: 18)
+          node-version: '22'
           cache: 'npm'
 
       # 5. Instalar dependências Node.js e build do React
@@ -77,36 +77,42 @@ jobs:
           echo "MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}" >> .env.production
           echo "MAIL_FROM_NAME=\"CiboShope\"" >> .env.production
           echo "" >> .env.production
-          echo "VITE_APP_NAME="${APP_NAME}"" >> .env.production
+          echo "VITE_APP_NAME=\"${APP_NAME}\"" >> .env.production
           
 
-      # 8. Deploy via FTP
-      - name: Sync Files to Server
+      # 8. Deploy arquivos públicos para o diretório raiz
+      - name: Sync Public Files to Server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./public/
+          server-dir: ${{ secrets.FTP_PUBLIC_DIR }}
+          log-level: minimal
+          dry-run: false
+          dangerous-clean-slate: false
+          protocol: ftp
+          exclude: |
+            **/.git*
+            **/.github*
+            **/node_modules/**
+            **/tests/**
+            **/.env*
+
+      # 9. Deploy arquivos do Laravel para o diretório abaixo do raiz
+      - name: Sync Laravel Files to Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          server-dir: ${{ secrets.FTP_PRIVATE_DIR }}
           log-level: minimal
           dry-run: false
           dangerous-clean-slate: false
-          protocol: ftp
-          include: |
-            app/**
-            bootstrap/**
-            config/**
-            database/**
-            public/**
-            resources/**
-            routes/**
-            storage/**
-            vendor/**
-            artisan
-            composer.json
-            composer.lock
-            .env.production
+          protocol: ftp  # Use 'ftps' se o servidor suportar
           exclude: |
             **/.git*
             **/.github*
@@ -115,12 +121,13 @@ jobs:
             **/.env.example
             **/README.md
             **/phpunit.xml
+            **/public/**
             **/storage/logs/*
             **/storage/framework/cache/*
             **/storage/framework/sessions/*
             **/storage/framework/views/*
 
-      # 9. Instruções finais
+      # 10. Instruções finais
       - name: Final Instructions
         run: |
           echo "Deploy concluído!"
@@ -128,6 +135,3 @@ jobs:
           echo "1. Renomeiear .env.production para .env no diretório raiz do Laravel."
           echo "2. Importar o banco de dados localmente."
           echo "3. Configurar permissões via FTP: 755 para pastas, 644 para arquivos, 777 para storage/ e bootstrap/cache/."
-          echo "4. Verifique o index.php em htdocs para apontar ao diretório correto do Laravel."
-          echo ""
-          echo "Tempo total estimado: 5-10 minutos (depende do servidor FTP)."
