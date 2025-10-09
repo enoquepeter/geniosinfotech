@@ -11,6 +11,6 @@ Require all denied
 </IfModule>
 </Files>
 
-<IfModule mod_alias.c>
-RedirectMatch 301 ^/$ http://test-geniosdainformatica.wuaze.com
-</IfModule>
+# <IfModule mod_alias.c>
+# RedirectMatch 301 ^/$ http://test-geniosdainformatica.wuaze.com
+# </IfModule>

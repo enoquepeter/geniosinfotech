@@ -20,8 +20,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: mbstring, xml, zip, gd, mysql, opcache
+          php-version: '8.3'
+          extensions: mbstring, xml, zip, gd, mysql, opcache, intl, bcmath
           coverage: none
 
       # 3. Instalar dependências PHP
