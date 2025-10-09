@@ -24,6 +24,19 @@
     <!-- Google site verification -->
     <meta name="google-site-verification" content="nmeJ2Y4ENgoYGiejqi73eCA9dn8St75RHlfkPBSX_Kw" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1JPTZRV76T"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'G-1JPTZRV76T');
+    </script>
+
     <link rel="icon" type="image/png" href="./favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="shortcut icon" href="./favicon.ico" />

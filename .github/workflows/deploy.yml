@@ -1,4 +1,4 @@
-name: Laravel Deploy - ULTRA FAST (No Vendor, No Delete)
+name: Deploy Laravel + React via FTP
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy to Production
     runs-on: ubuntu-latest
 
     steps:
@@ -15,29 +16,50 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar Node.js
+      # 2. Configurar PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'  # Ajuste para a versão do seu servidor (ex.: 7.4, 8.0)
+          extensions: mbstring, xml, zip, gd, mysql, opcache
+          coverage: none
+
+      # 3. Instalar dependências PHP (gera a pasta vendor)
+      - name: Install PHP Dependencies
+        run: |
+          composer install --optimize-autoloader --no-dev --no-interaction --no-progress
+
+      # 4. Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '22'  # Ajuste para sua versão (ex.: 18)
           cache: 'npm'
 
-      # 3. Instalar dependências Node.js
-      - name: Install Node dependencies
-        run: npm ci
+      # 5. Instalar dependências Node.js e build do React
+      - name: Install Node Dependencies & Build React
+        run: |
+          npm ci
+          npm run build
 
-      # 4. Build assets
-      - name: Build assets
-        run: npm run build
+      # 6. Otimizar Laravel para produção
+      - name: Optimize Laravel
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          chmod -R 755 storage bootstrap/cache
 
-      # 5. Criar arquivo de configuração de produção
+      # 7. Criar arquivo de configuração de produção
       - name: Create production config
         run: |
-          echo "APP_NAME=\"Genios_Infotech\"" > .env.production
+          echo "APP_NAME=\"Genios_da_Informatica\"" > .env.production
           echo "APP_ENV=production" >> .env.production
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env.production
           echo "APP_DEBUG=false" >> .env.production
           echo "APP_URL=${{ secrets.APP_URL }}" >> .env.production
+          echo "" >> .env.production
+          echo "IPAPI_KEY=${{ secrets.IPAPI_KEY }}" >> .env.production
           echo "" >> .env.production
           echo "DB_CONNECTION=mysql" >> .env.production
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.production
@@ -53,10 +75,13 @@ jobs:
           echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env.production
           echo "MAIL_ENCRYPTION=tls" >> .env.production
           echo "MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}" >> .env.production
-          echo "MAIL_FROM_NAME=\"Genios Infotech\"" >> .env.production
+          echo "MAIL_FROM_NAME=\"CiboShope\"" >> .env.production
+          echo "" >> .env.production
+          echo "VITE_APP_NAME="${APP_NAME}"" >> .env.production
+          
 
-      # 6. Deploy APENAS arquivos essenciais
-      - name: Deploy essential files only
+      # 8. Deploy via FTP
+      - name: Sync Files to Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -67,6 +92,7 @@ jobs:
           log-level: minimal
           dry-run: false
           dangerous-clean-slate: false
+          protocol: ftp
           include: |
             app/**
             bootstrap/**
@@ -76,6 +102,7 @@ jobs:
             resources/**
             routes/**
             storage/**
+            vendor/**
             artisan
             composer.json
             composer.lock
@@ -92,16 +119,15 @@ jobs:
             **/storage/framework/cache/*
             **/storage/framework/sessions/*
             **/storage/framework/views/*
-            **/vendor/**
 
-      # 7. Instruções finais
-      - name: Final instructions
+      # 9. Instruções finais
+      - name: Final Instructions
         run: |
-          echo "✅ Deploy concluído!"
-          echo "📋 Próximos passos:"
-          echo "1. Renomeie .env.production para .env no servidor"
-          echo "2. Instale vendor: composer install --no-dev"
-          echo "3. Execute: php artisan migrate --force"
-          echo "4. Configure permissões: chmod -R 755 storage"
+          echo "Deploy concluído!"
+          echo "Próximos passos (no servidor via painel de controle ou FTP):"
+          echo "1. Renomeiear .env.production para .env no diretório raiz do Laravel."
+          echo "2. Importar o banco de dados localmente."
+          echo "3. Configurar permissões via FTP: 755 para pastas, 644 para arquivos, 777 para storage/ e bootstrap/cache/."
+          echo "4. Verifique o index.php em htdocs para apontar ao diretório correto do Laravel."
           echo ""
-          echo "🚀 Tempo total: 2-3 minutos!"
+          echo "Tempo total estimado: 5-10 minutos (depende do servidor FTP)."

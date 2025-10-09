@@ -1,16 +1,76 @@
+import { useEffect, useRef } from "react";
+import slide1 from "@/assets/slide 1.jpg";
+import slide2 from "@/assets/slide 2.jpg";
+import slide3 from "@/assets/slide 3.jpg";
+import slide4 from "@/assets/slide 4.jpg";
+
+const slides = [slide1, slide2, slide3, slide4, slide1, slide2, slide3, slide4];
+
 const Hero = () => {
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const scrollContainer = scrollRef.current;
+        if (!scrollContainer) return;
+
+        let scrollPos = 0;
+        const scrollSpeed = 0.3;
+
+        const animate = () => {
+            scrollPos += scrollSpeed;
+            if (scrollPos >= scrollContainer.scrollWidth / 2) {
+                scrollPos = 0;
+            }
+            scrollContainer.scrollLeft = scrollPos;
+            requestAnimationFrame(animate);
+        };
+
+        const animationId = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(animationId);
+    }, []);
+
+
+    // const scrollToBenefits = () => {
+    //     document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
+    // };
+
+    // const scrollToCTA = () => {
+    //     document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth' });
+    // };
+
     return (
-        <>
-            <section className="container py-20 md:py-28 mt-10  px-4 md:px-6 hero-pattern flex flex-col items-center text-center space-y-4">
+        <section className=" px-4 md:px-6 min-h-screen hero-pattern flex flex-col items-center text-center space-y-4">
+            <div
+                ref={scrollRef}
+                className="absolute flex overflow-x-hidden w-full h-full opacity-20 dark:opacity-10"
+            >
+                <div className="flex animate-slide">
+                    {slides.map((slide, index) => (
+                        <div
+                            key={index}
+                            className="flex-shrink-0 h-full w-auto"
+                        >
+                            <img
+                                src={slide}
+                                alt=""
+                                className="w-full h-full object-cover opacity-20"
+                            />
+
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="mx-auto relative z-10 pt-20 md:pt-32">
                 <div className="opacity-100 transform-none">
-                    <h1 className="text-4xl md:text-6xl max-w-3xl font-bold tracking-tight text-transparent bg-clip-text mb-4 hero-title">
+                    <h1 className="text-4xl md:text-6xl max-w-3xl font-bold tracking-tight bg-clip-text mb-4 hero-title">
                         Transforme suas apresentações em obras de arte profissionais
                     </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
                         Domine as técnicas avançadas do PowerPoint e destaque-se em apresentações profissionais, acadêmicas ou pessoais.
                     </p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4 mt-8 opacity-100 transform-none">
+                <div className="flex flex-col sm:flex-row gap-4 mt-8 opacity-100 transform-none justify-center">
                     <a
                         href="https://pay.hotmart.com/X100039750B"
                         target="_blank"
@@ -31,8 +91,8 @@ const Hero = () => {
                         </button>
                     </a>
                 </div>
-            </section>
-        </>
+            </div>
+        </section>
     );
 };
 

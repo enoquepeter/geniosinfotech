@@ -8,6 +8,7 @@ import Slides from "@/components/cursos/powerpoint/Slides";
 import Modules from "@/components/cursos/powerpoint/Modules";
 import Pricing from "@/components/cursos/powerpoint/Pricing";
 import FAQ from "@/components/cursos/powerpoint/FAQ";
+import ThemeToggle from "@/components/cursos/powerpoint/ThemeToggle";
 
 const PowerPoint = () => {
     const meta = ({
@@ -75,21 +76,14 @@ const PowerPoint = () => {
                 </noscript> */}
             </Helmet>
 
-            <header>
-                <Header />
-            </header>
-
-            <main className="">
-                {/* <div className="flex-grow"> */}
-
+            <main>
+                <ThemeToggle />
                 <Hero />
                 <Benefits />
                 <Slides />
                 <Modules />
                 <Pricing />
                 <FAQ />
-
-                {/* </div> */}
             </main>
 
             <footer>
