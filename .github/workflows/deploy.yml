@@ -121,7 +121,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ${{ secrets.FTP_PRIVATE_DIR }}
-          log-level: detailed
+          log-level: verbose
           dry-run: false
           dangerous-clean-slate: false
           protocol: ftp
