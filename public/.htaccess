@@ -24,16 +24,17 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule . /index.php [L]
 
-    <IfModule mod_headers.c>
-        Header set Access-Control-Allow-Origin "https://test-geniosdainformatica.wuaze.com"
-        Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-        Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
-        Header set Access-Control-Allow-Credentials "true"
+</IfModule>
 
-        <If "%{REQUEST_METHOD} == 'OPTIONS'">
-            RewriteEngine On
-            RewriteCond %{REQUEST_METHOD} OPTIONS
-            RewriteRule ^(.*)$ $1 [R=204,L]
-        </If>
-    </IfModule>
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "https://test-geniosdainformatica.wuaze.com"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header set Access-Control-Allow-Credentials "true"
+
+    <If "%{REQUEST_METHOD} == 'OPTIONS'">
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=204,L]
+    </If>
 </IfModule>

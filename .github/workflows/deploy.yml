@@ -28,6 +28,18 @@ jobs:
       - name: Install PHP Dependencies
         run: |
           composer install --optimize-autoloader --no-dev --no-interaction --no-progress
+          # Verifica se vendor/autoload.php foi gerado
+          if [ ! -f vendor/autoload.php ]; then
+            echo "❌ Erro: vendor/autoload.php não foi gerado. Verifique o composer.json e logs."
+            exit 1
+          fi
+          echo "✅ vendor/autoload.php gerado com sucesso."
+          # Verifica se routes contém arquivos
+          if [ -z "$(ls -A routes/)" ]; then
+            echo "⚠️ Aviso: A pasta routes está vazia. Adicione arquivos como web.php e api.php."
+            exit 1
+          fi
+          echo "✅ Pasta routes contém arquivos."
 
       # 4. Configurar Node.js
       - name: Setup Node.js
@@ -48,7 +60,7 @@ jobs:
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
-          chmod -R 755 storage bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
 
       # 7. Criar arquivo de configuração de produção
       - name: Create production config
@@ -56,7 +68,7 @@ jobs:
           echo "APP_NAME=\"Genios_da_Informatica\"" > .env.production
           echo "APP_ENV=production" >> .env.production
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env.production
-          echo "APP_DEBUG=false" >> .env.production
+          echo "APP_DEBUG=true" >> .env.production  # Temporário para debug
           echo "APP_URL=${{ secrets.APP_URL }}" >> .env.production
           echo "" >> .env.production
           echo "IPAPI_KEY=${{ secrets.IPAPI_KEY }}" >> .env.production
@@ -109,10 +121,10 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ${{ secrets.FTP_PRIVATE_DIR }}
-          log-level: minimal
+          log-level: detailed
           dry-run: false
           dangerous-clean-slate: false
-          protocol: ftp  # Use 'ftps' se o servidor suportar
+          protocol: ftp
           exclude: |
             **/.git*
             **/.github*
@@ -122,6 +134,7 @@ jobs:
             **/README.md
             **/phpunit.xml
             **/public/**
+            **/.htaccess
             **/storage/logs/*
             **/storage/framework/cache/*
             **/storage/framework/sessions/*
